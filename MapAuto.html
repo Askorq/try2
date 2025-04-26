@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Маршруты с детализацией времени</title>
+  <style>
+    #map { width: 100%; height: 500px; margin-top: 10px; }
+    .inputs { display: flex; flex-direction: column; gap: 15px; margin-bottom: 10px; }
+    .route-group { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    input, button { padding: 8px; min-width: 250px; }
+    .remove-btn { background-color: #e74c3c; color: white; border: none; cursor: pointer; padding: 8px; }
+    #routes { margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <h2>Построение маршрутов</h2>
+
+  <div class="inputs" id="routes-container">
+    <div class="route-group" id="route-1">
+      <input type="text" id="start-1" placeholder="Начальная точка маршрута 1" onclick="enablePlacement('start-1')">
+      <input type="text" id="end-1" placeholder="Конечная точка маршрута 1" onclick="enablePlacement('end-1')">
+      <button class="remove-btn" onclick="removeRoute(1)">Удалить</button>
+    </div>
+  </div>
+
+  <div>
+    <button onclick="addRouteFields()">Добавить маршрут</button>
+    <button onclick="buildAllRoutes()">Построить маршруты</button>
+  </div>
+
+  <div id="map"></div>
+  <div id="routes"></div>
+
+  <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=5644802e-7d51-415f-9b04-a8755bcfda2c" type="text/javascript"></script>
+  <script>
+    ymaps.ready(init);
+
+    let map;
+    let placemarks = {};
+    let routeCount = 1;
+    let activeInput = null;
+    let routeLines = {};
+    let pointIndex = 1;
+    const routeColors = ['#ff0000', '#008000', '#0000ff', '#ff9900', '#800080', '#00cccc'];
+
+    function init() {
+      map = new ymaps.Map("map", {
+        center: [55.751244, 37.618423],
+        zoom: 10,
+        controls: ['zoomControl', 'searchControl']
+      });
+
+      map.controls.get('searchControl').options.set({
+        float: 'right',
+        size: 'large',
+        provider: 'yandex#map'
+      });
+
+      addSuggestToInput('start-1');
+      addSuggestToInput('end-1');
+
+      map.events.add('click', function (e) {
+        if (!activeInput) return;
+        const coords = e.get('coords');
+        setPlacemark(activeInput, coords);
+        updateAddressFromCoords(activeInput, coords);
+        activeInput = null;
+      });
+    }
+
+    function setPlacemark(inputId, coords) {
+      if (placemarks[inputId]) {
+        placemarks[inputId].geometry.setCoordinates(coords);
+      } else {
+        const index = pointIndex++;
+        const label = `${index}`;
+        placemarks[inputId] = new ymaps.Placemark(coords, {
+          iconContent: label
+        }, {
+          preset: 'islands#blueStretchyIcon',
+          draggable: true
+        });
+
+        placemarks[inputId].events.add('dragend', function () {
+          const newCoords = placemarks[inputId].geometry.getCoordinates();
+          updateAddressFromCoords(inputId, newCoords);
+        });
+
+        map.geoObjects.add(placemarks[inputId]);
+      }
+      map.setCenter(coords);
+    }
+
+    function updateAddressFromCoords(inputId, coords) {
+      ymaps.geocode(coords).then(function (res) {
+        const address = res.geoObjects.get(0).getAddressLine();
+        document.getElementById(inputId).value = address;
+      });
+    }
+
+    function enablePlacement(inputId) {
+      activeInput = inputId;
+      alert("Кликни на карту, чтобы установить точку.");
+    }
+
+    function addSuggestToInput(inputId) {
+      const suggest = new ymaps.SuggestView(inputId);
+      suggest.events.add('select', function (e) {
+        const address = e.get('item').value;
+        ymaps.geocode(address).then(res => {
+          const coords = res.geoObjects.get(0).geometry.getCoordinates();
+          document.getElementById(inputId).value = address;
+          setPlacemark(inputId, coords);
+        });
+      });
+    }
+
+    function addRouteFields() {
+      routeCount++;
+      const container = document.getElementById('routes-container');
+
+      const routeDiv = document.createElement('div');
+      routeDiv.className = 'route-group';
+      routeDiv.id = `route-${routeCount}`;
+
+      const startInput = document.createElement('input');
+      startInput.type = 'text';
+      startInput.id = `start-${routeCount}`;
+      startInput.placeholder = `Начальная точка маршрута ${routeCount}`;
+      startInput.onclick = () => enablePlacement(startInput.id);
+
+      const endInput = document.createElement('input');
+      endInput.type = 'text';
+      endInput.id = `end-${routeCount}`;
+      endInput.placeholder = `Конечная точка маршрута ${routeCount}`;
+      endInput.onclick = () => enablePlacement(endInput.id);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = 'Удалить';
+      removeBtn.className = 'remove-btn';
+      removeBtn.onclick = () => removeRoute(routeCount);
+
+      routeDiv.appendChild(startInput);
+      routeDiv.appendChild(endInput);
+      routeDiv.appendChild(removeBtn);
+      container.appendChild(routeDiv);
+
+      addSuggestToInput(startInput.id);
+      addSuggestToInput(endInput.id);
+    }
+
+    function removeRoute(index) {
+      const routeDiv = document.getElementById(`route-${index}`);
+      if (routeDiv) routeDiv.remove();
+
+      const startId = `start-${index}`;
+      const endId = `end-${index}`;
+
+      if (placemarks[startId]) {
+        map.geoObjects.remove(placemarks[startId]);
+        delete placemarks[startId];
+      }
+      if (placemarks[endId]) {
+        map.geoObjects.remove(placemarks[endId]);
+        delete placemarks[endId];
+      }
+
+      if (routeLines[index]) {
+        map.geoObjects.remove(routeLines[index]);
+        delete routeLines[index];
+      }
+    }
+
+    function buildAllRoutes() {
+      document.getElementById("routes").innerHTML = "";
+
+      Object.values(routeLines).forEach(line => map.geoObjects.remove(line));
+      routeLines = {};
+
+      for (let i = 1; i <= routeCount; i++) {
+        const startId = `start-${i}`;
+        const endId = `end-${i}`;
+        const start = placemarks[startId];
+        const end = placemarks[endId];
+
+        if (!start || !end) continue;
+
+        const multiRoute = new ymaps.multiRouter.MultiRoute({
+          referencePoints: [
+            start.geometry.getCoordinates(),
+            end.geometry.getCoordinates()
+          ],
+          params: { routingMode: 'auto' }
+        }, {
+          boundsAutoApply: true,
+          routeActiveStrokeColor: routeColors[(i - 1) % routeColors.length],
+          routeActiveStrokeWidth: 6,
+          routeActiveOpacity: 0.9
+        });
+
+        map.geoObjects.add(multiRoute);
+        routeLines[i] = multiRoute;
+
+        multiRoute.model.events.add('requestsuccess', function () {
+          const activeRoute = multiRoute.getActiveRoute();
+          if (activeRoute) {
+            const distance = (activeRoute.properties.get("distance").value / 1000).toFixed(2);
+            const durationMin = Math.round(activeRoute.properties.get("duration").value / 60);
+
+            const days = Math.floor(durationMin / (24 * 60));
+            const hours = Math.floor((durationMin % (24 * 60)) / 60);
+            const minutes = durationMin % 60;
+
+            let timeStr = "";
+            if (days > 0) timeStr += `${days} дн. `;
+            if (hours > 0) timeStr += `${hours} ч. `;
+            if (minutes > 0 || timeStr === "") timeStr += `${minutes} мин.`;
+
+            const div = document.createElement('div');
+            div.innerHTML = `<strong>Маршрут ${i}:</strong> ${distance} км, ${timeStr}`;
+            document.getElementById("routes").appendChild(div);
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

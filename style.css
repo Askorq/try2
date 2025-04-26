@@ -1,0 +1,191 @@
+header {
+    background-color: #6495ED;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+}
+
+nav li {
+    margin-right: 20px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+.logo img {
+    width: 300px;
+    height: 80px;
+    display: block;
+}
+
+#productData {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#productData label {
+    display: inline-block;
+    width: 200px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    text-align: right;
+    margin-right: 10px;
+}
+
+#productData input[type="text"],
+#productData input[type="email"],
+#productData select {
+    width: 300px;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    display: inline-block;
+}
+
+#productData button[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block;
+    margin-top: 20px;
+    margin-left: 210px;
+}
+
+#productData button[type="submit"]:hover {
+    background-color: #3e8e41;
+}
+
+#productTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#productTable th,
+#productTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+#productTable th {
+    background-color: #f2f2f2;
+}
+
+#productTable tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.table-container {
+    height: 300px;
+    overflow-y: auto;
+}
+/* Добавим стили для кнопки очистки */
+#clearTableButton {
+    background-color: #d9534f;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#clearTableButton:hover {
+    background-color: #c9302c;
+}
+
+.transport-block {
+    width: 500px;
+    min-width: 500px;
+}
+
+.transport-divider {
+    width: 2px;
+    height: 650px;
+    margin: 0 10px; /* уменьшили отступ между блоками */
+    background: linear-gradient(to bottom, #ccc, #eee);
+    border-radius: 2px;
+}
+.transport-block {
+  width: 100%;
+}
+
+
+
+iframe {
+  border: none;
+  border-radius: 10px;
+}
+
+#carrierTable th, #carrierTable td {
+    border: 1px solid #ccc;
+    padding: 5px 8px;
+    text-align: left;
+}
+
+#carrierTable th {
+    background-color: #e6f0ff;
+}
+.carrier-table-wrapper {
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#carrierTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#carrierTable th,
+#carrierTable td {
+    border: 1px solid #ccc;
+    padding: 5px 8px;
+    text-align: left;
+}
+
+#carrierTable th {
+    background-color: #e6f0ff;
+}
+.carrier-table-wrapper {
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.small-map {
+    height: 280px !important;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}

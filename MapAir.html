@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Авиационный маршрут (спутник)</title>
+  <style>
+    #map { width: 100%; height: 500px; margin: 15px 0; }
+    .inputs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+    input, button { padding: 8px; min-width: 250px; }
+    #distance { font-weight: bold; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <h2>Построение маршрута</h2>
+
+  <div class="inputs">
+    <input type="text" id="airport-from" placeholder="Аэропорт отправления">
+    <input type="text" id="airport-to" placeholder="Аэропорт назначения">
+    <button onclick="drawAviationRoute()">Показать маршрут</button>
+  </div>
+
+  <div id="map"></div>
+  <div id="distance"></div>
+
+  <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=5644802e-7d51-415f-9b04-a8755bcfda2c" type="text/javascript"></script>
+  <script>
+    ymaps.ready(init);
+
+    let map, line;
+    let pointFrom, pointTo;
+
+    function init() {
+      map = new ymaps.Map("map", {
+        center: [55.751244, 37.618423],
+        zoom: 3,
+        type: 'yandex#hybrid', // включён спутниковый вид
+        controls: ['zoomControl']
+      });
+
+      new ymaps.SuggestView('airport-from');
+      new ymaps.SuggestView('airport-to');
+    }
+
+    function drawAviationRoute() {
+      const from = document.getElementById('airport-from').value;
+      const to = document.getElementById('airport-to').value;
+
+      if (!from || !to) {
+        alert("Пожалуйста, введите оба аэропорта.");
+        return;
+      }
+
+      Promise.all([
+        ymaps.geocode(from),
+        ymaps.geocode(to)
+      ]).then(([resFrom, resTo]) => {
+        const coordsFrom = resFrom.geoObjects.get(0).geometry.getCoordinates();
+        const coordsTo = resTo.geoObjects.get(0).geometry.getCoordinates();
+
+        if (pointFrom) map.geoObjects.remove(pointFrom);
+        if (pointTo) map.geoObjects.remove(pointTo);
+        if (line) map.geoObjects.remove(line);
+
+        pointFrom = new ymaps.Placemark(coordsFrom, { iconCaption: 'Отправление' }, { preset: 'islands#blueAirportIcon' });
+        pointTo = new ymaps.Placemark(coordsTo, { iconCaption: 'Назначение' }, { preset: 'islands#redAirportIcon' });
+
+        line = new ymaps.Polyline([coordsFrom, coordsTo], {}, {
+          strokeColor: "#1e90ff",
+          strokeWidth: 4,
+          strokeOpacity: 0.8,
+          geodesic: true
+        });
+
+        map.geoObjects.add(pointFrom);
+        map.geoObjects.add(pointTo);
+        map.geoObjects.add(line);
+
+        map.setBounds(ymaps.geoQuery([pointFrom, pointTo]).getBounds(), { checkZoomRange: true });
+
+        const distance = ymaps.coordSystem.geo.getDistance(coordsFrom, coordsTo) / 1000;
+        document.getElementById('distance').textContent = `Расстояние: ${distance.toFixed(2)} км`;
+      });
+    }
+  </script>
+</body>
+</html>

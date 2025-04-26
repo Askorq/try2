@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Морские маршруты с кнопками</title>
+  <style>
+    #map { width: 100%; height: 600px; margin-top: 15px; }
+    .buttons { margin-bottom: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+    button { padding: 10px 20px; cursor: pointer; }
+    .legend { margin-top: 15px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
+    .color-box { width: 20px; height: 10px; display: inline-block; }
+  </style>
+</head>
+<body>
+
+<h2>Просмтор маршрутов</h2>
+
+<div class="buttons">
+  <button id="toggleNSR" onclick="toggleNSR()">Показать Северный морской путь</button>
+  <button id="toggleSuez" onclick="toggleSuez()">Показать путь через Суэцкий канал</button>
+</div>
+
+<div id="map"></div>
+
+<div class="legend">
+  <div class="legend-item"><span class="color-box" style="background-color: red;"></span> Северный морской путь</div>
+  <div class="legend-item"><span class="color-box" style="background-color: lime;"></span> Путь через Суэцкий канал</div>
+</div>
+
+<script src="https://api-maps.yandex.ru/2.1/?apikey=5644802e-7d51-415f-9b04-a8755bcfda2c&lang=ru_RU" type="text/javascript"></script>
+<script>
+ymaps.ready(function () {
+  var map = new ymaps.Map('map', {
+    center: [55, 60],
+    zoom: 2,
+    type: 'yandex#hybrid',
+    controls: ['zoomControl']
+  });
+
+  var nsrRoute = new ymaps.Polyline([
+    [43.1155, 131.8855],  // Владивосток
+    [52.247376, 160.363915],  // Тихий океан
+    [66.032873, -168.505188],  // Берингов пролив
+    [71.6267, 128.8744],  // Тикси
+    [64.5393, 40.5175],   // Архангельск
+    [59.9386, 30.3141]    // Санкт-Петербург
+  ], {}, {
+    strokeColor: "#FF0000", // Яркий красный
+    strokeWidth: 4,
+    strokeOpacity: 1,
+    geodesic: true
+  });
+
+  var suezRoute = new ymaps.Polyline([
+    [43.1155, 131.8855],   // Владивосток
+    [35.838950, 131.299989],   // Японское море
+    [15.249226, 111.814008],   // Южно-Китайское море
+    [10.8231, 106.6297],   // Сайгон
+    [7.8731, 80.7718],     // Шри-Ланка
+    [12.992458, 51.920789],     // Индийский океан
+    [12.8797, 45.0360],    // Аденский залив
+    [30.0444, 31.2357],    // Каир
+    [39.0764, 25.2317],    // Эгейское море
+    [38.9637, 35.2433],    // Турция
+    [44.6167, 33.5254],    // Севастополь
+    [44.6167, 39.7203]     // Новороссийск
+  ], {}, {
+    strokeColor: "#00FF00", // Яркий зелёный
+    strokeWidth: 4,
+    strokeOpacity: 1,
+    geodesic: true
+  });
+
+  let nsrShown = false;
+  let suezShown = false;
+
+  function toggleNSR() {
+    if (!nsrShown) {
+      map.geoObjects.add(nsrRoute);
+      map.setBounds(nsrRoute.geometry.getBounds(), { checkZoomRange: true, zoomMargin: 20 });
+      document.getElementById('toggleNSR').textContent = 'Скрыть Северный морской путь';
+    } else {
+      map.geoObjects.remove(nsrRoute);
+      document.getElementById('toggleNSR').textContent = 'Показать Северный морской путь';
+    }
+    nsrShown = !nsrShown;
+  }
+
+  function toggleSuez() {
+    if (!suezShown) {
+      map.geoObjects.add(suezRoute);
+      map.setBounds(suezRoute.geometry.getBounds(), { checkZoomRange: true, zoomMargin: 20 });
+      document.getElementById('toggleSuez').textContent = 'Скрыть путь через Суэцкий канал';
+    } else {
+      map.geoObjects.remove(suezRoute);
+      document.getElementById('toggleSuez').textContent = 'Показать путь через Суэцкий канал';
+    }
+    suezShown = !suezShown;
+  }
+
+  // Чтобы функции были доступны вне ymaps.ready
+  window.toggleNSR = toggleNSR;
+  window.toggleSuez = toggleSuez;
+});
+</script>
+
+</body>
+</html>
