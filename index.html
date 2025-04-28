@@ -75,7 +75,7 @@
                     <th>#</th>
                     <th>Наименование продукта</th>
                     <th>Степень заморозки</th>
-                    <th><span title="Температурный">Темпепатурный режим перевозки </span> </th>
+                    <th><span title="Температурный">Температурный режим перевозки </span> </th>
                     <th>Вес груза (кг)</th>
                     <th>Сроки транспортировки</th>
                     <th>Коэффициент</th>
@@ -109,6 +109,7 @@
       <form id="addCarrierForm" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
         <input type="text" name="NP" placeholder="Название перевозчика" required>
         <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+          <input type="number" name="t150" placeholder="<150 км" step="0.1" required>
           <input type="number" name="t500" placeholder="<500 км" step="0.1" required>
           <input type="number" name="t1500" placeholder="<1500 км" step="0.1" required>
           <input type="number" name="t3000" placeholder="<3000 км" step="0.1" required>
@@ -130,6 +131,7 @@
               <th>Тарифы</th>
               <th>Классы рефрижераторов</th>
               <th>Рейтинг</th>
+              <th>Удалить</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -144,16 +146,127 @@
 
 </div>
 
-<!-- Морской транспорт -->
-  <div class="transport-block" style="display: flex; flex-direction: column;">
+<!-- Блок морского транспорта -->
+<div class="transport-block" style="display: flex; flex-direction: column;">
   <h3>Морской транспорт</h3>
-  <div style="flex-grow: 1; display: flex; flex-direction: column;">
-    <iframe src="MapSea.html" style="width: 100%; min-height: 400px; height: 95vh; border: none; border-radius: 10px;"></iframe>
+
+  <!-- База перевозчиков морского транспорта -->
+  <div id="seaCarrierBlock" style="border: 1px solid #ccc; border-radius: 8px; background: #f8f8f8; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+      <strong style="margin: 0;">База перевозчиков (морской транспорт)</strong>
+      <button id="toggleSeaCarrierBlock" style="font-size: 18px; background: none; border: none; cursor: pointer;">➕</button>
+    </div>
+    <div id="seaCarrierControls" style="display: none; padding: 10px; padding-top: 0;">
+      <form id="addSeaCarrierForm" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+        <select name="route" required>
+          <option value="Владивосток-Санкт-Петербург">Владивосток-Санкт-Петербург</option>
+          <option value="Владивосток-Новороссийск">Владивосток-Новороссийск</option>
+        </select>
+        <input type="text" name="line" placeholder="Наименование линии" required>
+        <input type="number" name="freightCost" placeholder="Стоимость фрахта (руб.)" step="0.01" required>
+        <input type="number" name="transitTime" placeholder="Время в пути (дней)" step="0.1" required>
+        <input type="number" name="reefSurcharge" placeholder="Надбавка за реф-контейнер (руб.)" step="0.01" required>
+        <input type="number" name="rating" placeholder="Рейтинг" step="0.1" min="1.1" max="5.0" required>
+        <button type="submit">Добавить перевозчика</button>
+      </form>
+      <button id="downloadSeaCsvBtn">Скачать базу в CSV</button>
+      <input type="file" id="seaCarrierCsvInput" accept=".csv" style="margin-left: 10px;">
+
+      <div class="carrier-table-wrapper">
+        <table id="seaCarrierTable">
+          <thead>
+            <tr>
+              <th>Маршрут</th>
+              <th>Линия</th>
+              <th>Стоимость фрахта (руб.)</th>
+              <th>Время в пути (дней)</th>
+              <th>Надбавка за реф-контейнер (руб.)</th>
+              <th>Рейтинг</th>
+              <th>Удалить</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
   </div>
+
+  <!-- Карта морского транспорта -->
+  <iframe src="MapSea.html" style="width: 100%; min-height: 400px; height: 70vh; border: none; border-radius: 10px;"></iframe>
 </div>
+
   <!-- Железнодорожный транспорт -->
     <div class="transport-block">
       <h3>Железнодорожный транспорт</h3>
+            <!-- База маршрутов ЖД -->
+      <div id="railCarrierBlock" style="border: 1px solid #ccc; border-radius: 8px; background: #f8f8f8; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+          <strong style="margin: 0;">База маршрутов (ЖД транспорт)</strong>
+          <button id="toggleRailCarrierBlock" style="font-size: 18px; background: none; border: none; cursor: pointer;">➕</button>
+        </div>
+        <div id="railCarrierControls" style="display: none; padding: 10px; padding-top: 0;">
+          <form id="addRailCarrierForm" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+            <input type="text" name="route" placeholder="Маршрут (город A - город B)" required>
+            <input type="number" name="kcj" placeholder="Тариф (Kcj)" step="0.01" required>
+            <input type="number" name="tj" placeholder="Время в пути (Tj) дней" step="0.1" required>
+            <input type="number" name="sj" placeholder="Расстояние (Sj) км" step="0.1" required>
+            <button type="submit">Добавить маршрут</button>
+          </form>
+          <button id="downloadRailCsvBtn">Скачать базу маршрутов</button>
+          <input type="file" id="railCarrierCsvInput" accept=".csv" style="margin-left: 10px;">
+
+          <div class="carrier-table-wrapper">
+            <table id="railCarrierTable">
+              <thead>
+                <tr>
+                  <th>Маршрут</th>
+                  <th>Тариф (Kcj)</th>
+                  <th>Время в пути (Tj)</th>
+                  <th>Расстояние (Sj)</th>
+                  <th>Удалить</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- База вагонов -->
+      <div id="wagonBlock" style="border: 1px solid #ccc; border-radius: 8px; background: #f8f8f8; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+          <strong style="margin: 0;">База вагонов (ЖД транспорт)</strong>
+          <button id="toggleWagonBlock" style="font-size: 18px; background: none; border: none; cursor: pointer;">➕</button>
+        </div>
+        <div id="wagonControls" style="display: none; padding: 10px; padding-top: 0;">
+          <form id="addWagonForm" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+          <input type="text" name="type" placeholder="Тип вагона" required>
+          <div style="display: flex; gap: 10px;">
+            <input type="number" name="t_min" placeholder="Температура от (°C)" step="0.1" required>
+            <input type="number" name="t_max" placeholder="Температура до (°C)" step="0.1" required>
+          </div>
+          <input type="number" name="fv" placeholder="Стоимость вагона (руб.)" step="0.01" required>
+          <button type="submit">Добавить вагон</button>
+        </form>
+
+          <button id="downloadWagonCsvBtn">Скачать базу вагонов</button>
+          <input type="file" id="wagonCsvInput" accept=".csv" style="margin-left: 10px;">
+
+          <div class="carrier-table-wrapper">
+            <table id="wagonTable">
+              <thead>
+                <tr>
+                  <th>Тип вагона</th>
+                  <th>Температурный режим (t)</th>
+                  <th>Стоимость вагона (Fv)</th>
+                  <th>Удалить</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+</div>
       <h2>Просмтор маршрута</h2>
       <div style="width: 100%; height: 300px; margin-bottom: 30px;">
         <div style="margin-bottom: 10px;">
@@ -167,8 +280,49 @@
     </div>
 
     <!-- Авиационный транспорт -->
-     <div class="transport-block" style="display: flex; flex-direction: column;">
-          <h3>Авиационный транспорт</h3>
+    <div class="transport-block" style="display: flex; flex-direction: column;">
+    <h3>Авиационный транспорт</h3>
+        <!-- База перевозчиков авиационного транспорта -->
+        <div id="airCarrierBlock" style="border: 1px solid #ccc; border-radius: 8px; background: #f8f8f8; margin-bottom: 20px; margin-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px;">
+            <strong style="margin: 0;">База перевозчиков (авиационный транспорт)</strong>
+            <button id="toggleAirCarrierBlock" style="font-size: 18px; background: none; border: none; cursor: pointer;">➕</button>
+          </div>
+          <div id="airCarrierControls" style="display: none; padding: 10px; padding-top: 0;">
+            <form id="addAirCarrierForm" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+              <select name="route" required>
+                <option value="Владивосток-Москва">Владивосток-Москва</option>
+                <option value="Владивосток-Санкт-Петербург">Владивосток-Санкт-Петербург</option>
+              </select>
+              <input type="text" name="company" placeholder="Наименование авиакомпании" required>
+              <input type="number" name="kca" placeholder="Базовый тариф (₽/кг)" step="0.01" required>
+              <input type="number" name="kns" placeholder="Надбавка за скоропорт (%)" step="0.01" required>
+              <input type="number" name="avcont" placeholder="Аренда контейнера (₽)" step="0.01" required>
+              <input type="number" name="ksbor" placeholder="Сборы (₽)" step="0.01" required>
+              <button type="submit">Добавить перевозчика</button>
+            </form>
+            <button id="downloadAirCsvBtn">Скачать базу в CSV</button>
+            <input type="file" id="airCarrierCsvInput" accept=".csv" style="margin-left: 10px;">
+
+            <div class="carrier-table-wrapper">
+              <table id="airCarrierTable">
+                <thead>
+                  <tr>
+                    <th>Маршрут</th>
+                    <th>Авиакомпания</th>
+                    <th>Базовый тариф (₽/кг)</th>
+                    <th>Надбавка за скоропорт (%)</th>
+                    <th>Аренда контейнера (₽)</th>
+                    <th>Сборы (₽)</th>
+                    <th>Удалить</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
           <iframe src="MapAir.html" style="width: 100%; min-height: 400px; height: 70vh; border: none; border-radius: 10px;"></iframe>
           </div>
 </div>
